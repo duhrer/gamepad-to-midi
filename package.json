@@ -1,0 +1,21 @@
+{
+    "name": "gamepad-to-midi",
+    "version": "1.0.0",
+    "description": "A package to translate inputs from one or more gamepads into MIDI messages sent to a MIDI output.",
+    "main": "index.html",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Tony Atkins <duhrer@gmail.com>",
+    "license": "BSD-3-Clause",
+    "dependencies": {
+        "bergson": "0.13.2",
+        "flocking": "git://github.com/the-t-in-rtf/Flocking.git#0385bcbc5cc21ea7780c2e7f0170e24ae7f71338",
+        "flocking-midi-router": "git://github.com/the-t-in-rtf/flocking-midi-router#618f2e8ae21cbbf146cb16cd94ba94f659a59692",
+        "infusion": "3.0.0-dev.20180122T170655Z.350441a9b"
+    },
+    "devDependencies": {
+        "grunt": "1.0.1",
+        "gpii-grunt-lint-all": "1.0.0-dev.20180629T081932Z.8a1f7fe"
+    }
+}
