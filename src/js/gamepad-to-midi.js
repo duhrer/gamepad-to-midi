@@ -77,6 +77,7 @@
             midiChannel: 0,
             buttonVelocity: 100
         },
+        offsetPerGamepad: 12,
         // TODO: Add a mechanism for having different rules for different gamepads as soon as we have a use case.
         rules: {
             onlyVerticalAxes: {
@@ -98,37 +99,51 @@
             },
             buttonToNotes: {
                 transform: {
-                    type: "fluid.transforms.valueMapper",
-                    defaultInputPath: "arguments.0",
-                    match: {
-                        0: 60,
-                        1: 61,
-                        2: 62,
-                        3: 63,
-                        4: 64,
-                        5: 65,
-                        6: 66,
-                        7: 67,
-                        8: 68,
-                        9: 69,
-                        10: 70,
-                        11: 71,
-                        12: 72,
-                        13: 73,
-                        14: 74,
-                        15: 75,
-                        16: 76,
-                        17: 77,
-                        18: 78,
-                        19: 79,
+                    type: "fluid.transforms.binaryOp",
+                    "left": {
+                        transform: {
+                            type: "fluid.transforms.valueMapper",
+                            defaultInputPath: "arguments.0",
+                            match: {
+                                0:  48,
+                                1:  49,
+                                2:  50,
+                                3:  51,
+                                4:  52,
+                                5:  53,
+                                6:  54,
+                                7:  55,
+                                8:  56,
+                                9:  57,
+                                10: 58,
+                                11: 59,
+                                12: 60,
+                                13: 61,
+                                14: 62,
+                                15: 63,
+                                16: 64,
+                                17: 65,
+                                18: 66,
+                                19: 67,
+                            },
+                            noMatch: {
+                                outputUndefinedValue: 36
+                            }
+                        }
                     },
-                    noMatch: {
-                        outputUndefinedValue: 48
-                    }
+                    "right": {
+                        transform: {
+                            type: "fluid.transforms.binaryOp",
+                            left: "{that}.options.offsetPerGamepad",
+                            rightPath: "arguments.1",
+                            operator: "*"
+                        }
+                    },
+                    "operator": "+"
                 }
             },
             onAxisChange: {
-                type: {transform: {type: "fluid.transforms.literalValue", input: "pitchbend"}},
+                type: { transform: { type: "fluid.transforms.literalValue", input: "pitchbend" } },
                 channel: "model.midiChannel",
                 value: {
                     transform: {
@@ -147,15 +162,15 @@
                 }
             },
             onButtonDown: {
-                type: {transform: {type: "fluid.transforms.literalValue", input: "noteOn"}},
+                type: { transform: { type: "fluid.transforms.literalValue", input: "noteOn"} },
                 channel: "model.midiChannel",
                 velocity: "model.buttonVelocity",
                 note: "{that}.options.rules.buttonToNotes"
             },
             onButtonUp: {
-                type: {transform: {type: "fluid.transforms.literalValue", input: "noteOff"}},
+                type: { transform: { type: "fluid.transforms.literalValue", input: "noteOff"} },
                 channel: "model.midiChannel",
-                velocity: {transform: {type: "fluid.transforms.literalValue", input: 0}},
+                velocity: { transform: { type: "fluid.transforms.literalValue", input: 0 } },
                 note: "{that}.options.rules.buttonToNotes"
             }
 

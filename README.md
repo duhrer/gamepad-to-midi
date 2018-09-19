@@ -36,7 +36,8 @@ work with any controller that works with the gamepad API.
 Once you have installed the requirements and connected your controller, open the `index.html` demo file in the root of
 your copy of the repository with a browser that supports the gamepad API.  You will see an interface that allows you to
 select a MIDI output.  Once you have selected a MIDI output, press buttons on your gamepad to play notes.  Button 0
-plays Middle C, and the note played goes up by one note per button.
+on gamepad 1 plays an octave below Middle C, and the note played goes up by one note per button.  Additional gamepads go
+up by one octave each, so that you can line up multiple gamepads to reach a wider range of notes.
 
 For a helpful guide to the location of each button, refer to [this diagram in the W3C working
 draft](https://www.w3.org/TR/gamepad/#remapping).
