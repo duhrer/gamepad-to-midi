@@ -12,7 +12,7 @@
         events: {
             onAxisChange: null, // fired with: currentValue, axisNumber, gamepadNumber
             onButtonDown: null, // fired with: buttonNumber, gamepadNumber
-            onButtonUp: null    // fired with: buttonNumber, gamepadNumber
+            onButtonUp:   null    // fired with: buttonNumber, gamepadNumber
         },
         members: {
             gamepads: {} // Store button / axis state for each gamepad.
@@ -67,7 +67,6 @@
         });
     };
 
-    // TODO: Wire this up to a MIDI output selector
     fluid.defaults("gp2m.harness", {
         gradeNames: ["gp2m.eventBroker", "fluid.viewComponent"],
         selectors: {
@@ -80,19 +79,54 @@
         offsetPerGamepad: 12,
         // TODO: Add a mechanism for having different rules for different gamepads as soon as we have a use case.
         rules: {
-            onlyVerticalAxes: {
-                "": {
-                    transform: {
-                        type: "fluid.transforms.valueMapper",
-                        defaultInputPath: "arguments.1",
-                        match: {
-                            0: false,
-                            1: true,
-                            2: false,
-                            3: true
-                        },
-                        noMatch: {
-                            outputUndefinedValue: false
+            filters: {
+                buttons: {
+                    // required because the Xbox Adaptive Controller sends double button presses, i.e. 0 and 15 at the same time.
+                    onlyFirstFifteenButtons: {
+                        "": {
+                            transform: {
+                                type: "fluid.transforms.valueMapper",
+                                defaultInputPath: "arguments.1",
+                                match: {
+                                    0:  true,
+                                    1:  true,
+                                    2:  true,
+                                    3:  true,
+                                    4:  true,
+                                    5:  true,
+                                    6:  true,
+                                    7:  true,
+                                    8:  true,
+                                    9:  true,
+                                    10: true,
+                                    11: true,
+                                    12: true,
+                                    13: true,
+                                    14: true
+                                },
+                                noMatch: {
+                                    outputUndefinedValue: false
+                                }
+                            }
+                        }
+                    },
+                },
+                axes: {
+                    onlyVerticalAxes: {
+                        "": {
+                            transform: {
+                                type: "fluid.transforms.valueMapper",
+                                defaultInputPath: "arguments.1",
+                                match: {
+                                    0: false,
+                                    1: true,
+                                    2: false,
+                                    3: true
+                                },
+                                noMatch: {
+                                    outputUndefinedValue: false
+                                }
+                            }
                         }
                     }
                 }
@@ -119,12 +153,7 @@
                                 11: 59,
                                 12: 60,
                                 13: 61,
-                                14: 62,
-                                15: 63,
-                                16: 64,
-                                17: 65,
-                                18: 66,
-                                19: 67,
+                                14: 62
                             },
                             noMatch: {
                                 outputUndefinedValue: 36
@@ -178,15 +207,15 @@
         listeners: {
             onAxisChange: {
                 funcName: "gp2m.harness.handleEvent",
-                args: ["{that}", "onAxisChange", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.onlyVerticalAxes"]
+                args: ["{that}", "onAxisChange", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.axes"]
             },
             onButtonDown: {
                 funcName: "gp2m.harness.handleEvent",
-                args: ["{that}", "onButtonDown", "@expand:fluid.makeArray({arguments})"]
+                args: ["{that}", "onButtonDown", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.buttons"]
             },
             onButtonUp: {
                 funcName: "gp2m.harness.handleEvent",
-                args: ["{that}", "onButtonUp", "@expand:fluid.makeArray({arguments})"]
+                args: ["{that}", "onButtonUp", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.buttons"]
             }
         },
         invokers: {
@@ -225,14 +254,20 @@
      * @param {Object} that - The harness component itself.
      * @param {String} eventKey - The event we are responding to (used to look up transformation rules).
      * @param {Array<Any>} eventArgs - The arguments passed when firing the event (varies by event).
-     * @param {Object} filterRule - A model transformation rule that evaluates to `true` if the event should be relayed.
+     * @param {Array<Object>} filterRules - A model transformation rule that evaluates to `true` if the event should be relayed.
      *
      */
-    gp2m.harness.handleEvent = function (that, eventKey, eventArgs, filterRule) {
+    gp2m.harness.handleEvent = function (that, eventKey, eventArgs, filterRules) {
         var toTransform = {arguments: eventArgs, model: that.model};
 
         // Optional filtering to (for example) allow filtering by channel.
-        var isAllowed = !filterRule || fluid.model.transformWithRules(toTransform, filterRule);
+        var isAllowed = true;
+        fluid.each(filterRules, function (filterRule) {
+            if (isAllowed) {
+                isAllowed = fluid.model.transformWithRules(toTransform, filterRule);
+            }
+        });
+
         if (isAllowed) {
             var rules   = that.options.rules[eventKey];
             var payload = fluid.model.transformWithRules(toTransform, rules);
