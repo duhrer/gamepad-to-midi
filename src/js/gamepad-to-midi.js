@@ -12,7 +12,7 @@
         events: {
             onAxisChange: null, // fired with: currentValue, axisNumber, gamepadNumber
             onButtonDown: null, // fired with: buttonNumber, gamepadNumber
-            onButtonUp:   null    // fired with: buttonNumber, gamepadNumber
+            onButtonUp:   null  // fired with: buttonNumber, gamepadNumber
         },
         members: {
             gamepads: {} // Store button / axis state for each gamepad.
@@ -205,15 +205,15 @@
 
         },
         listeners: {
-            onAxisChange: {
+            "onAxisChange.bendPitch": {
                 funcName: "gp2m.harness.handleEvent",
                 args: ["{that}", "onAxisChange", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.axes"]
             },
-            onButtonDown: {
+            "onButtonDown.sendNoteOn": {
                 funcName: "gp2m.harness.handleEvent",
                 args: ["{that}", "onButtonDown", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.buttons"]
             },
-            onButtonUp: {
+            "onButtonUp.sendNoteOff": {
                 funcName: "gp2m.harness.handleEvent",
                 args: ["{that}", "onButtonUp", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.buttons"]
             }
@@ -269,10 +269,12 @@
         });
 
         if (isAllowed) {
-            var rules   = that.options.rules[eventKey];
-            var payload = fluid.model.transformWithRules(toTransform, rules);
+            var rules   = fluid.get(that.options.rules, [eventKey]);
+            if (rules) {
+                var payload = fluid.model.transformWithRules(toTransform, rules);
 
-            that.send(payload);
+                that.send(payload);
+            }
         }
     };
 
