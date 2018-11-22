@@ -1,0 +1,26 @@
+<html>
+<head>
+    <title>Analog Stick Theremin.</title>
+    <script src="./node_modules/flocking/dist/flocking-all.js"></script>
+
+    <!-- For the MIDI Output selector -->
+    <script src="node_modules/flocking/src/ui/selectbox/js/selectbox.js"></script>
+    <script src="node_modules/flocking/src/ui/midi/midi-port-selector/js/midi-port-selector.js"></script>
+    <script src="node_modules/flocking/src/ui/midi/midi-connector/js/midi-connector.js"></script>
+
+    <!-- For gamepad polling -->
+    <script src="./node_modules/bergson/dist/bergson-only.js"></script>
+
+    <script src="./src/js/gamepad-to-midi.js"></script>
+    <script src="./src/js/analog-stick-theremin.js"></script>
+</head>
+<body>
+    <p>This page uses the analog sticks to send control codes which you can use to make a theremin (one for pitch, one for volume).</p>
+
+    <div class="midi-output"></div>
+
+    <script type="text/javascript">
+        var component = gp2m.theremin("body");
+    </script>
+</body>
+</html>

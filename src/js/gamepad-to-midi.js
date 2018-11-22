@@ -38,7 +38,8 @@
 
     gp2m.eventBroker.pollGamepads = function (that) {
         var activeGamepads = navigator.getGamepads();
-        fluid.each(activeGamepads, function (gamepad, gamepadIndex) {
+        fluid.each(activeGamepads, function (gamepad, index) {
+            var gamepadIndex = parseInt(index, 10);
             // By default there are four slots, and any unused slot returns null, so ignore those.
             if (gamepad === null) {
                 return;
@@ -205,17 +206,17 @@
 
         },
         listeners: {
-            "onAxisChange.bendPitch": {
+            "onAxisChange.handleAxisChange": {
                 funcName: "gp2m.harness.handleEvent",
-                args: ["{that}", "onAxisChange", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.axes"]
+                args: ["{that}", "onAxisChange", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.filters.axes"]
             },
-            "onButtonDown.sendNoteOn": {
+            "onButtonDown.handleButtonDown": {
                 funcName: "gp2m.harness.handleEvent",
-                args: ["{that}", "onButtonDown", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.buttons"]
+                args: ["{that}", "onButtonDown", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.filters.buttons"]
             },
-            "onButtonUp.sendNoteOff": {
+            "onButtonUp.handleButtonUp": {
                 funcName: "gp2m.harness.handleEvent",
-                args: ["{that}", "onButtonUp", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.buttons"]
+                args: ["{that}", "onButtonUp", "@expand:fluid.makeArray({arguments})", "{that}.options.rules.filters.buttons"]
             }
         },
         invokers: {
