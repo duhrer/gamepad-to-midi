@@ -1,0 +1,33 @@
+<html>
+<head>
+    <title>Unit Tests for Theremin Functions</title>
+
+    <!-- Bring in jQuery and other dependencies -->
+    <script type="text/javascript" src="../../node_modules/infusion/dist/infusion-all.js"></script>
+
+    <!-- QUnit/jqUnit dependencies -->
+    <script type="text/javascript" src="../../node_modules/infusion/tests/lib/qunit/js/qunit.js"></script>
+    <script type="text/javascript" src="../../node_modules/infusion/tests/test-core/jqUnit/js/jqUnit.js"></script>
+    <script type="text/javascript" src="../../node_modules/infusion/tests/test-core/jqUnit/js/jqUnit-browser.js"></script>
+
+    <link rel="stylesheet" href="../../node_modules/infusion/tests/lib/qunit/css/qunit.css"/>
+
+    <!-- The code to be tested -->
+    <script type="text/javascript" src="../../src/js/gamepad-to-midi.js"></script>
+    <script type="text/javascript" src="../../src/js/analog-stick-theremin.js"></script>
+</head>
+<body>
+    <h1 id="qunit-header">Theremin Unit Tests</h1>
+    <h2 id="qunit-banner"></h2>
+    <div id="qunit-testrunner-toolbar"></div>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests"></ol>
+
+    <!-- Test HTML -->
+    <div id="qunit-fixture">
+    </div>
+
+    <!-- our QUnit tests -->
+    <script type="text/javascript" src="../js/theremin-tests.js"></script>
+    </body>
+</html>
