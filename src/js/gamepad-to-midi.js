@@ -14,8 +14,14 @@
             onButtonDown: null, // fired with: buttonNumber, gamepadNumber
             onButtonUp:   null  // fired with: buttonNumber, gamepadNumber
         },
-        members: {
+        model: {
             gamepads: {} // Store button / axis state for each gamepad.
+        },
+        modelListeners: {
+            "gamepads.*": {
+                funcName: "gp2m.eventBroker.handleGamepadChange",
+                args:     ["{that}", "{change}"]
+            }
         },
         components: {
             poller: {
@@ -40,6 +46,7 @@
         var activeGamepads = navigator.getGamepads();
         fluid.each(activeGamepads, function (gamepad, index) {
             var gamepadIndex = parseInt(index, 10);
+
             // By default there are four slots, and any unused slot returns null, so ignore those.
             if (gamepad === null) {
                 return;
@@ -48,23 +55,43 @@
             // a) all buttons that are now pressed fire an `onButtonDown` action.
             // b) all buttons that are released fire an `onButtonUp` action.
             fluid.each(gamepad.buttons, function (button, buttonIndex) {
-                if (fluid.get(that.gamepads, [gamepadIndex, "buttons", buttonIndex]) !== button.pressed) {
-                    var eventToFire = button.pressed ? "onButtonDown" : "onButtonUp";
-                    that.events[eventToFire].fire(buttonIndex, gamepadIndex);
-                }
-
-                fluid.set(that.gamepads, [gamepadIndex, "buttons", buttonIndex], button.pressed);
+                that.applier.change(["gamepads", gamepadIndex, "buttons", buttonIndex], button.pressed);
             });
 
             // c) changes in axes are relayed as `onAxisChanged` events.
             fluid.each(gamepad.axes, function (axisValue, axisIndex) {
-                var currentAxisValue = fluid.get(that.gamepads, [gamepadIndex, "axes", axisIndex]);
-                if (currentAxisValue !== axisValue) {
-                    that.events.onAxisChange.fire(axisValue, axisIndex, gamepadIndex);
-                }
-
-                fluid.set(that.gamepads, [gamepadIndex, "axes", axisIndex], axisValue);
+                that.applier.change(["gamepads", gamepadIndex, "axes", axisIndex], axisValue);
             });
+        });
+    };
+
+    /**
+     *
+     * Handle a change to a single gamepad's state, including the state of all buttons and axes.
+     *
+     * @param {Object} that - The event broker component.
+     * @param {Object} change - The change applier's "receipt" for the change.
+     *
+     */
+    gp2m.eventBroker.handleGamepadChange = function (that, change) {
+        var gamepadIndex = parseInt(change.path[change.path.length - 1], 10);
+
+        // a) all buttons that are now pressed fire an `onButtonDown` action.
+        // b) all buttons that are released fire an `onButtonUp` action.
+        fluid.each(change.value.buttons, function (buttonPressed, buttonIndex) {
+            var currentButtonValue = fluid.get(change.oldValue, ["buttons", buttonIndex]);
+            if (currentButtonValue !== buttonPressed) {
+                var eventToFire = buttonPressed ? "onButtonDown" : "onButtonUp";
+                that.events[eventToFire].fire(buttonIndex, gamepadIndex);
+            }
+        });
+
+        // c) changes in axes are relayed as `onAxisChanged` events.
+        fluid.each(change.value.axes, function (axisValue, axisIndex) {
+            var currentAxisValue = fluid.get(change.oldValue, ["axes", axisIndex]);
+            if (currentAxisValue !== axisValue) {
+                that.events.onAxisChange.fire(axisValue, axisIndex, gamepadIndex);
+            }
         });
     };
 
@@ -74,8 +101,8 @@
             output: ".midi-output"
         },
         model: {
-            midiChannel: 0,
-            buttonVelocity: 100
+            buttonVelocity: 100,
+            midiChannel:    0
         },
         offsetPerGamepad: 12,
         // TODO: Add a mechanism for having different rules for different gamepads as soon as we have a use case.
@@ -279,6 +306,14 @@
         }
     };
 
+    /**
+     *
+     * Transmit the results of a transformation to a MIDI output.
+     *
+     * @param {Object} that - The harness component.
+     * @param {Object} payload - The payload (MIDI message) to transmit.
+     *
+     */
     gp2m.harness.send = function (that, payload) {
         var output = fluid.get(that, "output.connection");
         if (output) {
