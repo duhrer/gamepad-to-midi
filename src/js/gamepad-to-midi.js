@@ -83,19 +83,19 @@
             var currentButtonValue = fluid.get(change.oldValue, ["buttons", buttonIndex]);
             if (currentButtonValue !== buttonValue) {
                 var eventToFire = buttonValue ? "onButtonDown" : "onButtonUp";
-                // TODO: Add support for triggers, which send a meaningful value.
                 that.events[eventToFire].fire(buttonValue, buttonIndex, gamepadIndex);
             }
         });
 
+        // TODO: Especially with the PS4, the "jitter" is so high that pitchbend is constantly being sent.  Add some kind of gating.
         // c) changes in axes are relayed as `onAxisChanged` events.
-        fluid.each(change.value.axes, function (axisValue, axisIndexAsString) {
-            var axisIndex = parseInt(axisIndexAsString, 10);
-            var currentAxisValue = fluid.get(change.oldValue, ["axes", axisIndex]);
-            if (currentAxisValue !== axisValue) {
-                that.events.onAxisChange.fire(axisValue, axisIndex, gamepadIndex);
-            }
-        });
+        //fluid.each(change.value.axes, function (axisValue, axisIndexAsString) {
+        //    var axisIndex = parseInt(axisIndexAsString, 10);
+        //    var currentAxisValue = fluid.get(change.oldValue, ["axes", axisIndex]);
+        //    if (currentAxisValue !== axisValue) {
+        //        that.events.onAxisChange.fire(axisValue, axisIndex, gamepadIndex);
+        //    }
+        //});
     };
 
     fluid.defaults("gp2m.harness", {
@@ -214,16 +214,9 @@
                 value: {
                     transform: {
                         type: "fluid.transforms.binaryOp",
-                        "left": {
-                            transform: {
-                                type: "fluid.transforms.binaryOp",
-                                leftPath: "arguments.0",
-                                right: 8192,
-                                operator: "*"
-                            }
-                        },
-                        "right": 8192,
-                        "operator": "+"
+                        leftPath: "arguments.0",
+                        right: 8192,
+                        operator: "*"
                     }
                 }
             },
