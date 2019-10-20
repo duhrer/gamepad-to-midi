@@ -55,7 +55,7 @@
             // a) all buttons that are now pressed fire an `onButtonDown` action.
             // b) all buttons that are released fire an `onButtonUp` action.
             fluid.each(gamepad.buttons, function (button, buttonIndex) {
-                that.applier.change(["gamepads", gamepadIndex, "buttons", buttonIndex], button.pressed);
+                that.applier.change(["gamepads", gamepadIndex, "buttons", buttonIndex], button.value);
             });
 
             // c) changes in axes are relayed as `onAxisChanged` events.
@@ -78,16 +78,19 @@
 
         // a) all buttons that are now pressed fire an `onButtonDown` action.
         // b) all buttons that are released fire an `onButtonUp` action.
-        fluid.each(change.value.buttons, function (buttonPressed, buttonIndex) {
+        fluid.each(change.value.buttons, function (buttonValue, buttonIndexAsString) {
+            var buttonIndex = parseInt(buttonIndexAsString, 10);
             var currentButtonValue = fluid.get(change.oldValue, ["buttons", buttonIndex]);
-            if (currentButtonValue !== buttonPressed) {
-                var eventToFire = buttonPressed ? "onButtonDown" : "onButtonUp";
-                that.events[eventToFire].fire(buttonIndex, gamepadIndex);
+            if (currentButtonValue !== buttonValue) {
+                var eventToFire = buttonValue ? "onButtonDown" : "onButtonUp";
+                // TODO: Add support for triggers, which send a meaningful value.
+                that.events[eventToFire].fire(buttonValue, buttonIndex, gamepadIndex);
             }
         });
 
         // c) changes in axes are relayed as `onAxisChanged` events.
-        fluid.each(change.value.axes, function (axisValue, axisIndex) {
+        fluid.each(change.value.axes, function (axisValue, axisIndexAsString) {
+            var axisIndex = parseInt(axisIndexAsString, 10);
             var currentAxisValue = fluid.get(change.oldValue, ["axes", axisIndex]);
             if (currentAxisValue !== axisValue) {
                 that.events.onAxisChange.fire(axisValue, axisIndex, gamepadIndex);
@@ -149,7 +152,13 @@
                                     0: false,
                                     1: true,
                                     2: false,
-                                    3: true
+                                    3: true,
+                                    4: false,
+                                    5: true,
+                                    6: false,
+                                    7: true,
+                                    8: false,
+                                    9: true
                                 },
                                 noMatch: {
                                     outputUndefinedValue: false
@@ -165,7 +174,7 @@
                     "left": {
                         transform: {
                             type: "fluid.transforms.valueMapper",
-                            defaultInputPath: "arguments.0",
+                            defaultInputPath: "arguments.1",
                             match: {
                                 0:  48,
                                 1:  49,
@@ -192,7 +201,7 @@
                         transform: {
                             type: "fluid.transforms.binaryOp",
                             left: "{that}.options.offsetPerGamepad",
-                            rightPath: "arguments.1",
+                            rightPath: "arguments.2",
                             operator: "*"
                         }
                     },
@@ -221,7 +230,14 @@
             onButtonDown: {
                 type: { transform: { type: "fluid.transforms.literalValue", input: "noteOn"} },
                 channel: "model.midiChannel",
-                velocity: "model.buttonVelocity",
+                velocity: {
+                    transform: {
+                        type: "fluid.transforms.binaryOp",
+                        leftPath: "arguments.0",
+                        right: 127,
+                        operator: "*"
+                    }
+                },
                 note: "{that}.options.rules.buttonToNotes"
             },
             onButtonUp: {

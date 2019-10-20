@@ -1,0 +1,32 @@
+<html>
+<head>
+    <title>Gamepad to MIDI demo.</title>
+    <script src="./node_modules/flocking/dist/flocking-all.js"></script>
+
+    <!-- For the MIDI Output selector -->
+    <script src="node_modules/flocking/src/ui/selectbox/js/selectbox.js"></script>
+    <script src="node_modules/flocking/src/ui/midi/midi-port-selector/js/midi-port-selector.js"></script>
+    <script src="node_modules/flocking/src/ui/midi/midi-connector/js/midi-connector.js"></script>
+
+    <!-- For gamepad polling -->
+    <script src="./node_modules/bergson/dist/bergson-only.js"></script>
+
+    <script src="./src/js/gamepad-to-midi.js"></script>
+    <script src="./dist/svg-ps4_oda.js"></script>
+    <script src="./src/js/ps4chestra.js"></script>
+    <style>
+        .ps4-oda-container {
+            margin-top: 5em;
+            margin-bottom: 5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="ps4-oda-container" align="center"></div>
+    <div class="midi-output"></div>
+
+    <script type="text/javascript">
+        var ps4chestra = gp2m.ps4chestra("body");
+    </script>
+</body>
+</html>

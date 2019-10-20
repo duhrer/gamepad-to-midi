@@ -19,8 +19,8 @@
         return Math.sqrt((y*y) + (x*x));
     };
 
-    gp2m.theremin.offsetPerGamepad = function (rawValue, gamepadIndex) {
-        return (gamepadIndex * 10) + rawValue;
+    gp2m.theremin.offsetPerGamepad = function (axisIndex, gamepadIndex) {
+        return (gamepadIndex * 10) + axisIndex;
     };
 
     gp2m.theremin.boundedValue = function (rawValue, lowestAllowed, highestAllowed) {
@@ -74,7 +74,7 @@
 
         // Calculate the angle and send as another control code with the number equal to the x axis index.
         var angle  = gp2m.theremin.getAngle(yValue, xValue);
-        var angleValue = Math.round((angle/360) * 127);
+        var angleValue = Math.round((angle/360) * that.options.angleScaling )+ that.options.angleBaseValue;
         var anglePayload = {
             type: "control",
             channel: that.model.midiChannel,
@@ -86,6 +86,9 @@
 
     fluid.defaults("gp2m.theremin", {
         gradeNames: ["gp2m.harness"],
+        // that.options.angleScaling )+ that.options.angleBaseValue
+        angleScaling: 24, // two octaves
+        angleBaseValue: 36, // C2
         listeners: {
             "onAxisChange.handleAxisChange": {
                 funcName: "gp2m.theremin.handleAxisChange",
