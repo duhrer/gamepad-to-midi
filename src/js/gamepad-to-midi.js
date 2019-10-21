@@ -89,13 +89,13 @@
 
         // TODO: Especially with the PS4, the "jitter" is so high that pitchbend is constantly being sent.  Add some kind of gating.
         // c) changes in axes are relayed as `onAxisChanged` events.
-        //fluid.each(change.value.axes, function (axisValue, axisIndexAsString) {
-        //    var axisIndex = parseInt(axisIndexAsString, 10);
-        //    var currentAxisValue = fluid.get(change.oldValue, ["axes", axisIndex]);
-        //    if (currentAxisValue !== axisValue) {
-        //        that.events.onAxisChange.fire(axisValue, axisIndex, gamepadIndex);
-        //    }
-        //});
+        fluid.each(change.value.axes, function (axisValue, axisIndexAsString) {
+            var axisIndex = parseInt(axisIndexAsString, 10);
+            var currentAxisValue = fluid.get(change.oldValue, ["axes", axisIndex]);
+            if (currentAxisValue !== axisValue) {
+                that.events.onAxisChange.fire(axisValue, axisIndex, gamepadIndex);
+            }
+        });
     };
 
     fluid.defaults("gp2m.harness", {

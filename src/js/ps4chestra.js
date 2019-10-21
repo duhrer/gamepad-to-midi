@@ -22,6 +22,11 @@
 
         // Update UI, including for non-playing buttons.
         that.oda.paintButton(buttonIndex, messageType);
+
+        // Special handling for triggers.
+        if (buttonIndex === 6 || buttonIndex === 7) {
+            gp2m.oda.moveTeeth(that.oda, buttonValue, buttonIndex);
+        }
     };
 
     gp2m.ps4chestra.saveAxisData = function (that, axisValue, axisIndex, gamepadIndex) {
@@ -40,7 +45,7 @@
         }
 
         // Update UI
-        that.oda.paintPupil(axisValue, axisIndex);
+        that.oda.movePupil(axisValue, axisIndex);
     };
 
     gp2m.ps4chestra.handlePitchbendChange = function (that) {
@@ -63,10 +68,20 @@
 
     fluid.registerNamespace("gp2m.oda");
 
+    gp2m.oda.decodeTransform = function (transformString) {
+        var matches = transformString.match(/translate\((-?[0-9\.]+),(-?[0-9\.]+)\)/);
+        return { x: parseInt(matches[1], 10), y: parseInt(matches[2], 10) };
+    };
+
+    gp2m.oda.encodeTransform = function (x, y) {
+        return "translate(" + x + "," + y + ")";
+    };
+
     gp2m.oda.init = function (that) {
         // Render our SVG content.
         that.container.html(that.options.svgData);
 
+        // TODO: Convert to using repositionable views that update their position based on a model variable.
         // Get the starting location of the "pupils".
         var leftPupil = $(that.container).find("#left-thumb");
         that.pupils.left.startX = parseInt(leftPupil.attr("cx"), 10);
@@ -75,6 +90,20 @@
         var rightPupil = $(that.container).find("#right-thumb");
         that.pupils.right.startX = parseInt(rightPupil.attr("cx"), 10);
         that.pupils.right.startY = parseInt(rightPupil.attr("cy"), 10);
+
+        // Get the starting location of the "teeth"
+        var upperTeeth = $(that.container).find("#upper-teeth");
+        var startingUpperTeethTransform = upperTeeth.attr("transform");
+        var startingUpperTeethCoords = gp2m.oda.decodeTransform(startingUpperTeethTransform);
+        that.teeth.upper.startX = startingUpperTeethCoords.x;
+        that.teeth.upper.startY = startingUpperTeethCoords.y
+
+        // lowers.attr("transform")
+        var lowerTeeth = $(that.container).find("#lower-teeth");
+        var startingLowerTeethTransform = lowerTeeth.attr("transform");
+        var startingLowerTeethCoords = gp2m.oda.decodeTransform(startingLowerTeethTransform);
+        that.teeth.lower.startX = startingLowerTeethCoords.x;
+        that.teeth.lower.startY = startingLowerTeethCoords.y
     };
 
     gp2m.oda.paintButton = function (that, buttonIndex, messageType) {
@@ -86,7 +115,8 @@
         }
     };
 
-    gp2m.oda.paintPupil = function (that, axisValue, axisIndex) {
+    // TODO: Convert to using repositionable views that update their position based on a model variable.
+    gp2m.oda.movePupil = function (that, axisValue, axisIndex) {
         var pupil = axisIndex < 2 ? that.pupils.left : that.pupils.right;
         var pupilSelector = axisIndex < 2 ? "#left-thumb" : "#right-thumb";
         var pupilElement = $(that.container).find(pupilSelector);
@@ -104,11 +134,27 @@
         }
     };
 
+    // TODO: Convert to using repositionable views that update their position based on a model variable.
+    gp2m.oda.moveTeeth = function (that, buttonValue, buttonIndex) {
+        // 6 (left trigger) = upper, 7 (right trigger) = lower
+        var teeth = buttonIndex === 6 ? that.teeth.upper : that.teeth.lower;
+        var teethSelector = buttonIndex === 6 ? "#upper-teeth" : "#lower-teeth";
+        var deflection = buttonIndex === 6 ? that.options.upperTeethDeflection : that.options.lowerTeethDeflection;
+        var teethElement = $(that.container).find(teethSelector);
+        if (teethElement) {
+            var yOffset = buttonValue * deflection;
+            var updatedTransform = gp2m.oda.encodeTransform (teeth.startX, teeth.startY + yOffset)
+            teethElement.attr("transform", updatedTransform);
+        }
+    };
+
     fluid.defaults("gp2m.oda", {
         gradeNames: ["fluid.viewComponent"],
-        svgData: flock.midi.interchange.svg.ps4_oda,
+        svgData: flock.midi.interchange.svg.ps4_oda_animated_smile,
         pupilXDeflection: 25,
         pupilYDeflection: 25,
+        lowerTeethDeflection: 40,
+        upperTeethDeflection: -60,
         members: {
             pupils: {
                 left: {
@@ -116,6 +162,16 @@
                     startY:  0,
                 },
                 right: {
+                    startX: 0,
+                    startY: 0
+                }
+            },
+            teeth: {
+                upper: {
+                    startX: 0,
+                    startY: 0
+                },
+                lower: {
                     startX: 0,
                     startY: 0
                 }
@@ -132,12 +188,11 @@
                 funcName: "gp2m.oda.paintButton",
                 args: ["{that}", "{arguments}.0", "{arguments}.1"] // buttonIndex, messageType
             },
-            paintPupil: {
-                funcName: "gp2m.oda.paintPupil",
+            movePupil: {
+                funcName: "gp2m.oda.movePupil",
                 args: ["{that}", "{arguments}.0", "{arguments}.1"] // axisValue, axisIndex
             }
         }
-        // TODO: invoker to draw or move "pupils" around
     });
 
     fluid.defaults("gp2m.ps4chestra", {
