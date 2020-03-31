@@ -144,6 +144,7 @@
 
     fluid.registerNamespace("gp2m.oda");
 
+    // TODO: Break out the base grade to work with just a PS4 diagram that both the "smile" and "halloween" grades extend.
     gp2m.oda.decodeTransform = function (transformString) {
         var matches = transformString.match(/translate\((-?[0-9\.]+),(-?[0-9\.]+)\)/);
         return { x: parseInt(matches[1], 10), y: parseInt(matches[2], 10) };

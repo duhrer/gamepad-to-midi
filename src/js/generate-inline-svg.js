@@ -14,7 +14,7 @@ fluid.require("%flocking-midi-interchange/src/js/svg-generator.js");
 
 fluid.defaults("gp2m.svgGenerator", {
     gradeNames: ["flock.midi.interchange.svgJsFileGenerator"],
-    inputDirs: ["%gp2m/src/images"],
+    inputDirs: ["%gp2m/src/images/oda"],
     outputDir: "%gp2m/dist",
     codeTemplate: "/* globals fluid */\n(function (fluid) {\n\tvar flock = fluid.registerNamespace(\"flock\");\n\tfluid.registerNamespace(\"flock.midi.interchange.svg\");\n\t%name = %payload;\n})(fluid);\n",
     listeners: {
